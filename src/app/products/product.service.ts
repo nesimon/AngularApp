@@ -1,41 +1,32 @@
 import { Injectable } from "@angular/core";
 import { IComponent } from "./product";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+
 
 
 @Injectable({
     providedIn: 'root'
 })
 export class ProductService {
+  private productUrl = 'http://localhost:8080/componentlist';
 
-    getProducts(): IComponent[] {
-        return [
-            {
-                "id": 1,
-                "category": "CPU",
-                "name": "Intel Core i7-8809G",
-                "brand": "Intel",
-                "price": 499.95,
-                "quantity": 34,
-                "imageUrl": "https://openclipart.org/image/300px/svg_to_png/26215/Anonymous_Leaf_Rake.png"
-              },
-              {
-                "id": 2,
-                "category": "CPU",
-                "name": "Intel Core i5-8659G",
-                "brand": "Intel",
-                "price": 125,
-                "quantity": 12,
-                "imageUrl": "https://openclipart.org/image/300px/svg_to_png/58471/garden_cart.png"
-              },
-              {
-                "id": 5,
-                "category": "GPU",
-                "name": "Nvdia 970m",
-                "brand": "Nvdia",
-                "price": 350,
-                "quantity": 23,
-                "imageUrl": "https://openclipart.org/image/300px/svg_to_png/73/rejon_Hammer.png"
-              }
-        ];
+  constructor(private http: HttpClient) {}
+
+    getProducts(): Observable<IComponent[]> {
+        return this.http.get<IComponent[]>(this.productUrl).pipe(tap(data => console.log('All: ' + JSON.stringify(data))),
+          catchError(this.handleError));
+    }
+
+    private handleError(err: HttpErrorResponse) {
+      let errorMessage = '';
+      if(err.error instanceof ErrorEvent) {
+        errorMessage = 'An error occurred: ${err.error.message}';
+      } else {
+        errorMessage = 'Server returned code: ${err.status}, error message is: ${err.message}';
+      }
+      console.error(errorMessage);
+      return throwError(errorMessage);
     }
 }
